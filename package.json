@@ -1,0 +1,41 @@
+{
+  "name": "three-instanced-particles",
+  "version": "1.0.0",
+  "description": "Instanced mesh wrapper for managing particles.",
+  "author": "Julien Dargelos <contact@juliendargelos.com>",
+  "license": "MIT",
+  "main": "dist/index.cjs.js",
+  "module": "dist/index.mjs",
+  "browser": "dist/index.umd.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "rollup -c && tsc --outFile dist/index.d.ts --declaration --declarationMap --emitDeclarationOnly",
+    "dev": "rollup -c -w"
+  },
+  "dependencies": {
+    "@types/webgl2": "^0.0.5"
+  },
+  "peerDependencies": {
+    "three": "^0.110.0"
+  },
+  "devDependencies": {
+    "@types/jest": "^24.0.13",
+    "@typescript-eslint/eslint-plugin": "^1.8.0",
+    "@typescript-eslint/parser": "^1.8.0",
+    "eslint": "^5.12.1",
+    "rollup": "^1.1.2",
+    "rollup-plugin-alias": "^2.2.0",
+    "rollup-plugin-auto-external": "^2.0.0",
+    "rollup-plugin-cleaner": "^1.0.0",
+    "rollup-plugin-commonjs": "^9.2.0",
+    "rollup-plugin-eslint": "^5.1.0",
+    "rollup-plugin-node-resolve": "^4.0.0",
+    "rollup-plugin-terser": "^4.0.4",
+    "rollup-plugin-typescript2": "^0.21.0",
+    "three": "^0.110.0",
+    "typescript": "3.5.1"
+  }
+}

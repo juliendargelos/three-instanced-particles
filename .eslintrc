@@ -1,0 +1,38 @@
+{
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "project": "./tsconfig.json"
+  },
+  "extends": "plugin:@typescript-eslint/recommended",
+  "env": { "es6": true },
+  "globals": { "require": false },
+  "plugins": ["@typescript-eslint"],
+  "rules": {
+    "max-len": ["warn"],
+    "@typescript-eslint/indent": ["warn", 2],
+    "@typescript-eslint/no-non-null-assertion": "off",
+    "@typescript-eslint/no-use-before-define": "off",
+    "@typescript-eslint/member-delimiter-style": ["warn", {
+      "multiline": {
+        "delimiter": "none"
+      },
+      "singleline": {
+        "delimiter": "comma"
+      }
+    }],
+    "@typescript-eslint/explicit-function-return-type": ["error", {
+      "allowExpressions": true,
+      "allowTypedFunctionExpressions": true,
+      "allowHigherOrderFunctions": true
+    }],
+    "@typescript-eslint/member-ordering": ["warn", {
+      "default": [
+        "static-field",
+        "instance-field",
+        "constructor",
+        "static-method",
+        "instance-method"
+      ]
+    }]
+  }
+}
