@@ -187,10 +187,16 @@ var ParticleSource = /** @class */ (function (_super) {
             return this._material;
         },
         set: function (v) {
+            var _this = this;
             this._material = v;
             if (!this.mesh || !v)
                 return;
-            v.color.set(this.color);
+            if (Array.isArray(v)) {
+                v.forEach(function (material) { return material.color.set(_this.color); });
+            }
+            else {
+                v.color.set(this.color);
+            }
             if (!this.usesNormalMaterial)
                 this.mesh.material = v;
         },
@@ -203,7 +209,14 @@ var ParticleSource = /** @class */ (function (_super) {
         },
         set: function (v) {
             this._color = v;
-            this.material && this.material.color.set(v);
+            if (!this.material)
+                return;
+            if (Array.isArray(this.material)) {
+                this.material.forEach(function (material) { return material.color.set(v); });
+            }
+            else {
+                this.material.color.set(v);
+            }
         },
         enumerable: true,
         configurable: true

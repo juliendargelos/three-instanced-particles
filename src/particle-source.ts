@@ -34,7 +34,7 @@ export class ParticleSource extends Object3D {
   private mesh?: InstancedMesh
   private normalMesh?: InstancedMesh
   private _geometry?: Geometry
-  private _material?: ColoredMaterial
+  private _material?: ColoredMaterial | ColoredMaterial[]
   private _color!: Color | number
   private _usesNormalMaterial: boolean = false
 
@@ -50,7 +50,7 @@ export class ParticleSource extends Object3D {
     transition = {}
   }: {
     geometry?: Geometry
-    material?: ColoredMaterial
+    material?: ColoredMaterial | ColoredMaterial[]
     count?: number
     color?: Color | number
     transition?: ParticleSourceTransitionExecutors
@@ -85,14 +85,20 @@ export class ParticleSource extends Object3D {
     this.mesh.geometry = v
   }
 
-  public get material(): ColoredMaterial | undefined {
+  public get material(): ColoredMaterial | ColoredMaterial[] | undefined {
     return this._material
   }
 
-  public set material(v: ColoredMaterial | undefined) {
+  public set material(v: ColoredMaterial | ColoredMaterial[] | undefined) {
     this._material = v
     if (!this.mesh || !v) return
-    v.color.set(this.color as Color)
+
+    if (Array.isArray(v)) {
+      v.forEach(material => material.color.set(this.color as Color))
+    } else {
+      v.color.set(this.color as Color)
+    }
+
     if (!this.usesNormalMaterial) this.mesh.material = v
   }
 
@@ -102,7 +108,14 @@ export class ParticleSource extends Object3D {
 
   public set color(v: Color | number) {
     this._color = v
-    this.material && this.material.color.set(v as Color)
+
+    if (!this.material) return
+
+    if (Array.isArray(this.material)) {
+      this.material.forEach(material => material.color.set(v as Color))
+    } else {
+      this.material.color.set(v as Color)
+    }
   }
 
   public get usesNormalMaterial(): boolean {

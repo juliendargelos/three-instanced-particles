@@ -75,7 +75,7 @@ declare module "particle-source" {
         count: number;
         constructor({ geometry, material, count, color, transition }?: {
             geometry?: Geometry;
-            material?: ColoredMaterial;
+            material?: ColoredMaterial | ColoredMaterial[];
             count?: number;
             color?: Color | number;
             transition?: ParticleSourceTransitionExecutors;
@@ -83,7 +83,7 @@ declare module "particle-source" {
         private readonly normalMaterial;
         readonly generated: boolean;
         geometry: Geometry | undefined;
-        material: ColoredMaterial | undefined;
+        material: ColoredMaterial | ColoredMaterial[] | undefined;
         color: Color | number;
         usesNormalMaterial: boolean;
         protected createParticle(): Particle;
