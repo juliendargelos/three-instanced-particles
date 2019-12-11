@@ -93,6 +93,12 @@ declare module "particle-source" {
         update(): void;
         appendParticle({ prepare, complete, transition }?: ParticleSourceMutationExecutors): void;
         removeParticle({ prepare, complete, transition }?: ParticleSourceMutationExecutors): void;
+        appendParticles({ amount, ...executors }?: ParticleSourceMutationExecutors & {
+            amount?: number;
+        }): void;
+        removeParticles({ amount, ...executors }?: ParticleSourceMutationExecutors & {
+            amount?: number;
+        }): void;
     }
 }
 declare module "index" {

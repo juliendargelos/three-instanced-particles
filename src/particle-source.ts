@@ -234,4 +234,20 @@ export class ParticleSource extends Object3D {
       .prepareParticle(ParticleSourceMutation.Remove, prepare)
       .append(transition, complete)
   }
+
+  public appendParticles({
+    amount = Infinity,
+    ...executors
+  }: ParticleSourceMutationExecutors & { amount?: number } = {}): void {
+    amount = Math.min(amount, this.count - this.appendedParticles)
+    for (var i = 0; i < amount; i++) this.appendParticle(executors)
+  }
+
+  public removeParticles({
+    amount = Infinity,
+    ...executors
+  }: ParticleSourceMutationExecutors & { amount?: number } = {}): void {
+    amount = Math.min(amount, this.appendedParticles)
+    for (var i = 0; i < amount; i++) this.removeParticle(executors)
+  }
 }
