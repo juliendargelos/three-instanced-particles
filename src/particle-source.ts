@@ -31,7 +31,6 @@ interface ParticleSourceMutationExecutors {
 
 export class ParticleSource extends Object3D {
   private particles: Particle[] = []
-  private appendedParticles: number = 0
   private mesh?: InstancedMesh
   private normalMesh?: InstancedMesh
   private _geometry?: Geometry
@@ -39,6 +38,7 @@ export class ParticleSource extends Object3D {
   private _color!: Color | number
   private _usesNormalMaterial: boolean = false
 
+  public appendedParticles: number = 0
   public transition: ParticleSourceTransitionExecutors
   public count: number
 

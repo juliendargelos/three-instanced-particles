@@ -143,8 +143,8 @@ var ParticleSource = /** @class */ (function (_super) {
         var _b = _a === void 0 ? {} : _a, _c = _b.geometry, geometry = _c === void 0 ? undefined : _c, _d = _b.material, material = _d === void 0 ? undefined : _d, _e = _b.count, count = _e === void 0 ? 0 : _e, _f = _b.color, color = _f === void 0 ? 0xffffff : _f, _g = _b.transition, transition = _g === void 0 ? {} : _g;
         var _this = _super.call(this) || this;
         _this.particles = [];
-        _this.appendedParticles = 0;
         _this._usesNormalMaterial = false;
+        _this.appendedParticles = 0;
         _this.transition = transition;
         _this.geometry = geometry;
         _this.material = material;

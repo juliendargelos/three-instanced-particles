@@ -64,13 +64,13 @@ declare module "particle-source" {
     }
     export class ParticleSource extends Object3D {
         private particles;
-        private appendedParticles;
         private mesh?;
         private normalMesh?;
         private _geometry?;
         private _material?;
         private _color;
         private _usesNormalMaterial;
+        appendedParticles: number;
         transition: ParticleSourceTransitionExecutors;
         count: number;
         constructor({ geometry, material, count, color, transition }?: {
