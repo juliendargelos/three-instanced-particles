@@ -3,6 +3,7 @@
 Object.defineProperty(exports, '__esModule', { value: true });
 
 var three = require('three');
+var BufferGeometryUtils = require('three/examples/jsm/utils/BufferGeometryUtils');
 
 var Transition = /** @class */ (function () {
     function Transition() {
@@ -141,6 +142,29 @@ var lazy = function (target, property, descriptor) {
         value: get.call(target)
     })[property]; };
 };
+var isMesh = function (object) { return (object.isMesh); };
+var mergeGLTF = function (gltf) {
+    var geometries = [];
+    var materials = [];
+    gltf.scene.traverse(function (mesh) {
+        if (!isMesh(mesh))
+            return;
+        mesh.updateMatrixWorld(true);
+        mesh.geometry.applyMatrix(mesh.matrixWorld);
+        geometries.push(mesh.geometry);
+        materials.push(mesh.material);
+    });
+    if (!geometries.length)
+        throw new Error('Could not find any geometry in GLTF scene');
+    return {
+        geometry: geometries.length === 1
+            ? geometries[0]
+            : BufferGeometryUtils.BufferGeometryUtils.mergeBufferGeometries(geometries, true),
+        material: materials.length === 1
+            ? materials[0]
+            : materials
+    };
+};
 
 var ParticleSourceMutation;
 (function (ParticleSourceMutation) {
@@ -268,6 +292,11 @@ var ParticleSource = /** @class */ (function (_super) {
         }
         prepare && prepare(particle);
         return particle;
+    };
+    ParticleSource.prototype.useGLTF = function (gltf) {
+        var _a = mergeGLTF(gltf), geometry = _a.geometry, material = _a.material;
+        this.geometry = geometry;
+        this.material = material;
     };
     ParticleSource.prototype.generate = function () {
         if (!this.geometry || !this.material)

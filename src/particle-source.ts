@@ -2,16 +2,15 @@ import {
   Color,
   Object3D,
   Geometry,
-  Material,
+  BufferGeometry,
   InstancedMesh,
   MeshNormalMaterial
 } from 'three'
 
+import { GLTF } from 'three/examples/jsm/loaders/GLTFLoader'
 import { Particle } from '~/particle'
 import { TransitionExecutor } from '~/transition'
-import { lazy } from '~/utils'
-
-type ColoredMaterial = Material & { color: Color }
+import { lazy, mergeGLTF, ColoredMaterial } from '~/utils'
 
 enum ParticleSourceMutation {
   Append = 1,
@@ -33,7 +32,7 @@ export class ParticleSource extends Object3D {
   private particles: Particle[] = []
   private mesh?: InstancedMesh
   private normalMesh?: InstancedMesh
-  private _geometry?: Geometry
+  private _geometry?: Geometry | BufferGeometry
   private _material?: ColoredMaterial | ColoredMaterial[]
   private _color!: Color | number
   private _usesNormalMaterial: boolean = false
@@ -49,7 +48,7 @@ export class ParticleSource extends Object3D {
     color = 0xffffff,
     transition = {}
   }: {
-    geometry?: Geometry
+    geometry?: Geometry | BufferGeometry
     material?: ColoredMaterial | ColoredMaterial[]
     count?: number
     color?: Color | number
@@ -75,11 +74,11 @@ export class ParticleSource extends Object3D {
     return !!this.mesh
   }
 
-  public get geometry(): Geometry | undefined {
+  public get geometry(): Geometry | BufferGeometry | undefined {
     return this._geometry
   }
 
-  public set geometry(v: Geometry | undefined) {
+  public set geometry(v: Geometry | BufferGeometry | undefined) {
     this._geometry = v
     if (!this.mesh || !v) return
     this.mesh.geometry = v
@@ -168,6 +167,13 @@ export class ParticleSource extends Object3D {
     prepare && prepare(particle)
 
     return particle
+  }
+
+  public useGLTF(gltf: GLTF): void {
+    const { geometry, material } = mergeGLTF(gltf)
+
+    this.geometry = geometry
+    this.material = material
   }
 
   public generate(): void {

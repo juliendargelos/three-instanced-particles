@@ -40,15 +40,24 @@ declare module "particle" {
     }
 }
 declare module "utils" {
-    export const lazy: (target: object, property: string, descriptor: PropertyDescriptor) => void;
-}
-declare module "particle-source" {
-    import { Color, Object3D, Geometry, Material } from 'three';
-    import { Particle } from "particle";
-    import { TransitionExecutor } from "transition";
-    type ColoredMaterial = Material & {
+    import { BufferGeometry, Material, Object3D, Mesh, Color } from 'three';
+    import { GLTF } from 'three/examples/jsm/loaders/GLTFLoader';
+    export type ColoredMaterial = Material & {
         color: Color;
     };
+    export const lazy: (target: object, property: string, descriptor: PropertyDescriptor) => void;
+    export const isMesh: (object: Object3D) => object is Mesh;
+    export const mergeGLTF: (gltf: GLTF) => {
+        geometry: BufferGeometry;
+        material: ColoredMaterial | ColoredMaterial[];
+    };
+}
+declare module "particle-source" {
+    import { Color, Object3D, Geometry, BufferGeometry } from 'three';
+    import { GLTF } from 'three/examples/jsm/loaders/GLTFLoader';
+    import { Particle } from "particle";
+    import { TransitionExecutor } from "transition";
+    import { ColoredMaterial } from "utils";
     enum ParticleSourceMutation {
         Append = 1,
         Remove = -1
@@ -74,7 +83,7 @@ declare module "particle-source" {
         transition: ParticleSourceTransitionExecutors;
         count: number;
         constructor({ geometry, material, count, color, transition }?: {
-            geometry?: Geometry;
+            geometry?: Geometry | BufferGeometry;
             material?: ColoredMaterial | ColoredMaterial[];
             count?: number;
             color?: Color | number;
@@ -82,12 +91,13 @@ declare module "particle-source" {
         });
         private readonly normalMaterial;
         readonly generated: boolean;
-        geometry: Geometry | undefined;
+        geometry: Geometry | BufferGeometry | undefined;
         material: ColoredMaterial | ColoredMaterial[] | undefined;
         color: Color | number;
         usesNormalMaterial: boolean;
         protected createParticle(): Particle;
         protected prepareParticle(mutation: ParticleSourceMutation, prepare?: (particle: Particle) => void): Particle;
+        useGLTF(gltf: GLTF): void;
         generate(): void;
         dispose(all?: boolean): void;
         update(): void;

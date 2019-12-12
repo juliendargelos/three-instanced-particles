@@ -13,6 +13,7 @@ import tsconfig from './tsconfig.json'
 const config = {
   input: `src/index.ts`,
   output: { sourcemap: true },
+  external: ['three/examples/jsm/utils/BufferGeometryUtils'],
   plugins: [
     autoExternal(),
     typescript({ clean: true }),
@@ -45,7 +46,10 @@ export default [
       file: pkg.browser,
       format: 'umd',
       name: 'ThreeInstancedParticles',
-      globals: { three: 'THREE' }
+      globals: {
+        three: 'THREE',
+        'three/examples/jsm/utils/BufferGeometryUtils': 'THREE.BufferGeometryUtils'
+      }
     },
     plugins: [
       ...config.plugins,
