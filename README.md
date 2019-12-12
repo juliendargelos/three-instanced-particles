@@ -81,7 +81,7 @@ To make all of this work in you render loop, you should call `particleSource.upd
 
 #### Implementing custom behaviours
 
-The [`Particle`](src/particle.ts#L10) and [`ParticleSource`](src/particle-source.ts#L32) classes are meant to be extended so you can implement custom behaviours:
+The [`Particle`](src/particle.ts#L10) and [`ParticleSource`](src/particle-source.ts#L31) classes are meant to be extended so you can implement custom behaviours:
 
 ```typescript
 import { Particle, ParticleSource } from 'three-instanced-particles'
@@ -109,5 +109,7 @@ class SpinningParticleSource extends ParticleSource {
 #### Specific features
 
 If your rendering flow includes post processing, you may want to use the three scene [`overrideMaterial`](https://threejs.org/docs/#api/en/scenes/Scene.overrideMaterial) attribute. For some reason, this seems not to work with instanced meshes. `ParticleSource` let you choose to override its material with the [`MeshNormalMaterial`](https://threejs.org/docs/#api/en/materials/MeshNormalMaterial) by setting `particleSource.usesNormalMaterial` to `true` (set to `false` to stop overriding). So you may have to change this attribute during a normal rendering pass. Since there are other useful materials for post processing (like [`MeshDepthMaterial`](https://threejs.org/docs/#api/en/materials/MeshDepthMaterial)), this attribute will probably change in the future.
+
+If you want to use `ParticleSource` with GLTF, you can use `particleSource.useGLTF()` which takes a GLTF object as parameter (like the one created by the [`load()`](https://threejs.org/docs/#examples/en/loaders/GLTFLoader.load) and [`parse()`](https://threejs.org/docs/#examples/en/loaders/GLTFLoader.parse) methods of the three [`GLTFLoader`](https://threejs.org/docs/#examples/en/loaders/GLTFLoader)). `useGLTF()` will [automatically merge](src/utils.ts#L26-56) the geometries of all meshes found in the GLTF scene (using the three [BufferGeometryUtils.mergeBufferGeometries()](https://threejs.org/docs/#examples/en/utils/BufferGeometryUtils.mergeBufferGeometries) method), and retrieve the appropriate materials to make your GLTF instanciable. The merged geometry will by stored as a single BufferGeometry in `particleSource.geometry`, and the material(s) will be stored as a single or an array of materials in `particleSource.material` (depending on the structure of your GLTF). Calling `useGLTF()` is [exactly the same](src/particle-source.ts#L172-177) as giving a value to both `particleSource.geometry` and `particleSource.material`.
 
 Some features aren't mentionned here (like disposing or coloring things), but the [source code](src) is quite obvious, even more if you are using TypeScript.
