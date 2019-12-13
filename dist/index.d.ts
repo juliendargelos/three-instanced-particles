@@ -98,6 +98,7 @@ declare module "particle-source" {
         protected createParticle(): Particle;
         protected prepareParticle(mutation: ParticleSourceMutation, prepare?: (particle: Particle) => void): Particle;
         useGLTF(gltf: GLTF): void;
+        loadGLTF(url: string, complete?: (gltf: GLTF) => void): void;
         generate(): void;
         dispose(all?: boolean): void;
         update(): void;

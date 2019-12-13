@@ -1,4 +1,5 @@
 import { Vector3, Quaternion, Matrix4, MeshNormalMaterial, InstancedMesh, Object3D } from 'three';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { BufferGeometryUtils } from 'three/examples/jsm/utils/BufferGeometryUtils';
 
 var Transition = /** @class */ (function () {
@@ -293,6 +294,13 @@ var ParticleSource = /** @class */ (function (_super) {
         var _a = mergeGLTF(gltf), geometry = _a.geometry, material = _a.material;
         this.geometry = geometry;
         this.material = material;
+    };
+    ParticleSource.prototype.loadGLTF = function (url, complete) {
+        var _this = this;
+        new GLTFLoader().load(url, function (gltf) {
+            _this.useGLTF(gltf);
+            complete && complete(gltf);
+        });
     };
     ParticleSource.prototype.generate = function () {
         if (!this.geometry || !this.material)

@@ -13,7 +13,10 @@ import tsconfig from './tsconfig.json'
 const config = {
   input: `src/index.ts`,
   output: { sourcemap: true },
-  external: ['three/examples/jsm/utils/BufferGeometryUtils'],
+  external: [
+    'three/examples/jsm/loaders/GLTFLoader',
+    'three/examples/jsm/utils/BufferGeometryUtils'
+  ],
   plugins: [
     autoExternal(),
     typescript({ clean: true }),
@@ -48,6 +51,7 @@ export default [
       name: 'ThreeInstancedParticles',
       globals: {
         three: 'THREE',
+        'three/examples/jsm/loaders/GLTFLoader': 'THREE.GLTFLoader',
         'three/examples/jsm/utils/BufferGeometryUtils': 'THREE.BufferGeometryUtils'
       }
     },

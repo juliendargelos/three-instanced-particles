@@ -7,7 +7,7 @@ import {
   MeshNormalMaterial
 } from 'three'
 
-import { GLTF } from 'three/examples/jsm/loaders/GLTFLoader'
+import { GLTF, GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
 import { Particle } from '~/particle'
 import { TransitionExecutor } from '~/transition'
 import { lazy, mergeGLTF, ColoredMaterial } from '~/utils'
@@ -174,6 +174,13 @@ export class ParticleSource extends Object3D {
 
     this.geometry = geometry
     this.material = material
+  }
+
+  public loadGLTF(url: string, complete?: (gltf: GLTF) => void): void {
+    new GLTFLoader().load(url, (gltf) => {
+      this.useGLTF(gltf)
+      complete && complete(gltf)
+    })
   }
 
   public generate(): void {
