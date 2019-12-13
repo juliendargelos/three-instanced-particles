@@ -100,7 +100,10 @@ declare module "particle-source" {
         useGLTF(gltf: GLTF): void;
         loadGLTF(url: string, complete?: (gltf: GLTF) => void): void;
         generate(): void;
-        dispose(all?: boolean): void;
+        disposeMesh(): void;
+        disposeParticles(index?: number): void;
+        disposeGeometry(): void;
+        disposeMaterial(): void;
         update(): void;
         appendParticle({ prepare, complete, transition }?: ParticleSourceMutationExecutors): void;
         removeParticle({ prepare, complete, transition }?: ParticleSourceMutationExecutors): void;

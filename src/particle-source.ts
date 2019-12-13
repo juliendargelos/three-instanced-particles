@@ -193,27 +193,44 @@ export class ParticleSource extends Object3D {
       count
     } = this
 
-    this.dispose()
+    this.disposeMesh()
 
     this.mesh = new InstancedMesh(this.geometry, this.material, count)
     this.mesh.frustumCulled = false
 
     this.appendedParticles = Math.min(this.appendedParticles, count)
     while (particles.length < count) particles.push(this.createParticle())
-    particles.splice(count).forEach(particle => particle.dispose())
+    this.disposeParticles(count)
 
     this.add(this.mesh)
   }
 
-  public dispose(all: boolean = false): void {
-    if (this.mesh) {
-      this.remove(this.mesh)
-      this.mesh = undefined
-    }
+  public disposeMesh(): void {
+    if (!this.mesh) return
 
-    if (all) {
-      this.particles.splice(0).forEach(particle => particle.dispose())
-    }
+    this.remove(this.mesh)
+    this.mesh = undefined
+  }
+
+  public disposeParticles(index: number = 0): void {
+    this.particles.splice(index).forEach(particle => particle.dispose())
+  }
+
+  public disposeGeometry(): void {
+    if (!this.geometry) return
+
+    this.geometry.dispose()
+    this.geometry = undefined
+  }
+
+  public disposeMaterial(): void {
+    if (!this.material) return
+
+    Array.isArray(this.material)
+      ? this.material.forEach(material => material.dispose())
+      : this.material.dispose()
+
+    this.material = undefined
   }
 
   public update(): void {

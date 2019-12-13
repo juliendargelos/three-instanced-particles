@@ -310,24 +310,38 @@ var ParticleSource = /** @class */ (function (_super) {
         if (!this.geometry || !this.material)
             throw new Error('geometry and material must be set before calling generate()');
         var _a = this, particles = _a.particles, count = _a.count;
-        this.dispose();
+        this.disposeMesh();
         this.mesh = new three.InstancedMesh(this.geometry, this.material, count);
         this.mesh.frustumCulled = false;
         this.appendedParticles = Math.min(this.appendedParticles, count);
         while (particles.length < count)
             particles.push(this.createParticle());
-        particles.splice(count).forEach(function (particle) { return particle.dispose(); });
+        this.disposeParticles(count);
         this.add(this.mesh);
     };
-    ParticleSource.prototype.dispose = function (all) {
-        if (all === void 0) { all = false; }
-        if (this.mesh) {
-            this.remove(this.mesh);
-            this.mesh = undefined;
-        }
-        if (all) {
-            this.particles.splice(0).forEach(function (particle) { return particle.dispose(); });
-        }
+    ParticleSource.prototype.disposeMesh = function () {
+        if (!this.mesh)
+            return;
+        this.remove(this.mesh);
+        this.mesh = undefined;
+    };
+    ParticleSource.prototype.disposeParticles = function (index) {
+        if (index === void 0) { index = 0; }
+        this.particles.splice(index).forEach(function (particle) { return particle.dispose(); });
+    };
+    ParticleSource.prototype.disposeGeometry = function () {
+        if (!this.geometry)
+            return;
+        this.geometry.dispose();
+        this.geometry = undefined;
+    };
+    ParticleSource.prototype.disposeMaterial = function () {
+        if (!this.material)
+            return;
+        Array.isArray(this.material)
+            ? this.material.forEach(function (material) { return material.dispose(); })
+            : this.material.dispose();
+        this.material = undefined;
     };
     ParticleSource.prototype.update = function () {
         if (!this.mesh)
