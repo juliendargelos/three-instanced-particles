@@ -1,3 +1,5 @@
 export { Particle } from '~/particle'
 export { ParticleSource } from '~/particle-source'
+export { PhysicalParticle } from '~/physical-particle'
+export { PhysicalParticleSource } from '~/physical-particle-source'
 export { Transition } from '~/transition'

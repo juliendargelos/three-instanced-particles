@@ -22,20 +22,31 @@ interface ParticleSourceTransitionExecutors {
   remove?: TransitionExecutor
 }
 
-interface ParticleSourceMutationExecutors {
-  prepare?: (particle: Particle) => void
-  complete?: () => void
+export interface ParticleSourceMutationExecutors<
+  P extends Particle = Particle
+> {
+  prepare?: (particle: P) => void
+  complete?: (particle: P) => void
   transition?: TransitionExecutor
 }
 
-export class ParticleSource extends Object3D {
-  private particles: Particle[] = []
+export interface ParticleSourceParameters {
+  geometry?: Geometry | BufferGeometry
+  material?: ColoredMaterial | ColoredMaterial[]
+  count?: number
+  color?: Color | number
+  transition?: ParticleSourceTransitionExecutors
+}
+
+export class ParticleSource<P extends Particle = Particle> extends Object3D {
   private mesh?: InstancedMesh
   private normalMesh?: InstancedMesh
   private _geometry?: Geometry | BufferGeometry
   private _material?: ColoredMaterial | ColoredMaterial[]
   private _color!: Color | number
   private _usesNormalMaterial: boolean = false
+
+  protected particles: P[] = []
 
   public appendedParticles: number = 0
   public transition: ParticleSourceTransitionExecutors
@@ -47,13 +58,7 @@ export class ParticleSource extends Object3D {
     count = 0,
     color = 0xffffff,
     transition = {}
-  }: {
-    geometry?: Geometry | BufferGeometry
-    material?: ColoredMaterial | ColoredMaterial[]
-    count?: number
-    color?: Color | number
-    transition?: ParticleSourceTransitionExecutors
-  } = {}) {
+  }: ParticleSourceParameters = {}) {
     super()
 
     this.transition = transition
@@ -80,8 +85,7 @@ export class ParticleSource extends Object3D {
 
   public set geometry(v: Geometry | BufferGeometry | undefined) {
     this._geometry = v
-    if (!this.mesh || !v) return
-    this.mesh.geometry = v
+    this.updateGeometry()
   }
 
   public get material(): ColoredMaterial | ColoredMaterial[] | undefined {
@@ -90,15 +94,7 @@ export class ParticleSource extends Object3D {
 
   public set material(v: ColoredMaterial | ColoredMaterial[] | undefined) {
     this._material = v
-    if (!this.mesh || !v) return
-
-    if (Array.isArray(v)) {
-      v.forEach(material => material.color.set(this.color as Color))
-    } else {
-      v.color.set(this.color as Color)
-    }
-
-    if (!this.usesNormalMaterial) this.mesh.material = v
+    this.updateMaterial()
   }
 
   public get color(): Color | number {
@@ -127,20 +123,38 @@ export class ParticleSource extends Object3D {
     this.mesh.material = v ? this.normalMaterial : this.material!
   }
 
-  protected createParticle(): Particle {
-    return new Particle()
+  protected updateGeometry(): void {
+    if (!this.mesh || !this.geometry) return
+
+    this.mesh.geometry = this.geometry
+  }
+
+  protected updateMaterial(): void {
+    if (!this.mesh || !this.material) return
+
+    if (Array.isArray(this.material)) {
+      this.material.forEach(material => material.color.set(this.color as Color))
+    } else {
+      this.material.color.set(this.color as Color)
+    }
+
+    if (!this.usesNormalMaterial) this.mesh.material = this.material
+  }
+
+  protected createParticle(): P {
+    return new Particle() as P
   }
 
   protected prepareParticle(
     mutation: ParticleSourceMutation,
-    prepare?: (particle: Particle) => void
-  ): Particle {
+    prepare?: (particle: P) => void
+  ): P {
     if (!this.mesh) throw new Error(
       'The mesh and particles have not been generated, ' +
       'call generate() before calling appendParticle() or removeParticle()'
     )
 
-    let particle!: Particle
+    let particle!: P
 
     switch (mutation) {
       case ParticleSourceMutation.Append:
@@ -249,7 +263,7 @@ export class ParticleSource extends Object3D {
     prepare = undefined,
     complete = undefined,
     transition = this.transition.append
-  }: ParticleSourceMutationExecutors = {}): void {
+  }: ParticleSourceMutationExecutors<P> = {}): void {
     this
       .prepareParticle(ParticleSourceMutation.Append, prepare)
       .append(transition, complete)
@@ -259,16 +273,16 @@ export class ParticleSource extends Object3D {
     prepare = undefined,
     complete = undefined,
     transition = this.transition.remove
-  }: ParticleSourceMutationExecutors = {}): void {
+  }: ParticleSourceMutationExecutors<P> = {}): void {
     this
       .prepareParticle(ParticleSourceMutation.Remove, prepare)
-      .append(transition, complete)
+      .remove(transition, complete)
   }
 
   public appendParticles({
     amount = Infinity,
     ...executors
-  }: ParticleSourceMutationExecutors & { amount?: number } = {}): void {
+  }: ParticleSourceMutationExecutors<P> & { amount?: number } = {}): void {
     amount = Math.min(amount, this.count - this.appendedParticles)
     for (var i = 0; i < amount; i++) this.appendParticle(executors)
   }
@@ -276,7 +290,7 @@ export class ParticleSource extends Object3D {
   public removeParticles({
     amount = Infinity,
     ...executors
-  }: ParticleSourceMutationExecutors & { amount?: number } = {}): void {
+  }: ParticleSourceMutationExecutors<P> & { amount?: number } = {}): void {
     amount = Math.min(amount, this.appendedParticles)
     for (var i = 0; i < amount; i++) this.removeParticle(executors)
   }

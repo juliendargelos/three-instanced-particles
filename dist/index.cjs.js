@@ -5,6 +5,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 var three = require('three');
 var GLTFLoader = require('three/examples/jsm/loaders/GLTFLoader');
 var BufferGeometryUtils = require('three/examples/jsm/utils/BufferGeometryUtils');
+var cannon = require('cannon');
 
 var Transition = /** @class */ (function () {
     function Transition() {
@@ -65,24 +66,30 @@ var Particle = /** @class */ (function () {
         this.matrix = new three.Matrix4();
         this.transition = new Transition();
         this.appended = false;
+        this.removed = false;
     }
     Particle.prototype.append = function (transition, complete) {
+        var _this = this;
         this.appended = true;
         this.transition.start(transition || Transition.show, function () {
-            complete && complete();
+            complete && complete(_this);
         });
     };
     Particle.prototype.remove = function (transition, complete) {
         var _this = this;
         this.transition.start(transition || Transition.hide, function () {
-            _this.appended = false;
-            complete && complete();
+            _this.removed = true;
+            complete && complete(_this);
         });
     };
     Particle.prototype.update = function () {
         if (!this.appended)
             return false;
         this.matrix.compose(this.position.clone().add(this.transition.position), this.quaternion.clone().multiply(this.transition.quaternion), this.scale.clone().multiply(this.transition.scale));
+        if (this.removed) {
+            this.appended = false;
+            this.removed = false;
+        }
         return true;
     };
     Particle.prototype.dispose = function () {
@@ -137,14 +144,17 @@ function __decorate(decorators, target, key, desc) {
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 }
 
-var lazy = function (target, property, descriptor) {
+function lazy(target, property, descriptor) {
     var get = descriptor.get;
     descriptor.get = function () { return Object.defineProperty(target, property, {
         value: get.call(target)
     })[property]; };
-};
-var isMesh = function (object) { return (object.isMesh); };
-var mergeGLTF = function (gltf) {
+}
+
+function isMesh(object) {
+    return object.isMesh;
+}
+function mergeGLTF(gltf) {
     var geometries = [];
     var materials = [];
     gltf.scene.traverse(function (mesh) {
@@ -165,7 +175,7 @@ var mergeGLTF = function (gltf) {
             ? materials[0]
             : materials
     };
-};
+}
 
 var ParticleSourceMutation;
 (function (ParticleSourceMutation) {
@@ -177,8 +187,8 @@ var ParticleSource = /** @class */ (function (_super) {
     function ParticleSource(_a) {
         var _b = _a === void 0 ? {} : _a, _c = _b.geometry, geometry = _c === void 0 ? undefined : _c, _d = _b.material, material = _d === void 0 ? undefined : _d, _e = _b.count, count = _e === void 0 ? 0 : _e, _f = _b.color, color = _f === void 0 ? 0xffffff : _f, _g = _b.transition, transition = _g === void 0 ? {} : _g;
         var _this = _super.call(this) || this;
-        _this.particles = [];
         _this._usesNormalMaterial = false;
+        _this.particles = [];
         _this.appendedParticles = 0;
         _this.transition = transition;
         _this.geometry = geometry;
@@ -210,9 +220,7 @@ var ParticleSource = /** @class */ (function (_super) {
         },
         set: function (v) {
             this._geometry = v;
-            if (!this.mesh || !v)
-                return;
-            this.mesh.geometry = v;
+            this.updateGeometry();
         },
         enumerable: true,
         configurable: true
@@ -222,18 +230,8 @@ var ParticleSource = /** @class */ (function (_super) {
             return this._material;
         },
         set: function (v) {
-            var _this = this;
             this._material = v;
-            if (!this.mesh || !v)
-                return;
-            if (Array.isArray(v)) {
-                v.forEach(function (material) { return material.color.set(_this.color); });
-            }
-            else {
-                v.color.set(this.color);
-            }
-            if (!this.usesNormalMaterial)
-                this.mesh.material = v;
+            this.updateMaterial();
         },
         enumerable: true,
         configurable: true
@@ -269,6 +267,24 @@ var ParticleSource = /** @class */ (function (_super) {
         enumerable: true,
         configurable: true
     });
+    ParticleSource.prototype.updateGeometry = function () {
+        if (!this.mesh || !this.geometry)
+            return;
+        this.mesh.geometry = this.geometry;
+    };
+    ParticleSource.prototype.updateMaterial = function () {
+        var _this = this;
+        if (!this.mesh || !this.material)
+            return;
+        if (Array.isArray(this.material)) {
+            this.material.forEach(function (material) { return material.color.set(_this.color); });
+        }
+        else {
+            this.material.color.set(this.color);
+        }
+        if (!this.usesNormalMaterial)
+            this.mesh.material = this.material;
+    };
     ParticleSource.prototype.createParticle = function () {
         return new Particle();
     };
@@ -364,7 +380,7 @@ var ParticleSource = /** @class */ (function (_super) {
         var _b = _a === void 0 ? {} : _a, _c = _b.prepare, prepare = _c === void 0 ? undefined : _c, _d = _b.complete, complete = _d === void 0 ? undefined : _d, _e = _b.transition, transition = _e === void 0 ? this.transition.remove : _e;
         this
             .prepareParticle(ParticleSourceMutation.Remove, prepare)
-            .append(transition, complete);
+            .remove(transition, complete);
     };
     ParticleSource.prototype.appendParticles = function (_a) {
         if (_a === void 0) { _a = {}; }
@@ -386,7 +402,199 @@ var ParticleSource = /** @class */ (function (_super) {
     return ParticleSource;
 }(three.Object3D));
 
+var Body = /** @class */ (function (_super) {
+    __extends(Body, _super);
+    function Body() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    Body.prototype.removeShape = function (shape) {
+        var index = this.shapes.indexOf(shape);
+        if (index !== -1) {
+            this.shapes.splice(index, 1);
+            this.shapeOffsets.splice(index, 1);
+            this.shapeOrientations.splice(index, 1);
+            this.updateMassProperties();
+            this.updateBoundingRadius();
+            this.aabbNeedsUpdate = true;
+        }
+        return this;
+    };
+    Body.prototype.clearShapes = function (update) {
+        if (update === void 0) { update = true; }
+        if (this.shapes.length) {
+            this.shapes.splice(0);
+            this.shapeOffsets.splice(0);
+            this.shapeOrientations.splice(0);
+            if (update) {
+                this.updateMassProperties();
+                this.updateBoundingRadius();
+                this.aabbNeedsUpdate = true;
+            }
+        }
+        return this;
+    };
+    return Body;
+}(cannon.Body));
+
+var PhysicalParticle = /** @class */ (function (_super) {
+    __extends(PhysicalParticle, _super);
+    function PhysicalParticle() {
+        var _this = _super.call(this) || this;
+        _this.freezeDelay = Infinity;
+        _this.freezeFactor = new cannon.Vec3(0.9, 1, 0.9);
+        _this.freezeThreshold = 0.001;
+        _this.freezing = false;
+        _this.frozen = false;
+        _this.body = new Body(_this.bodyParameters);
+        return _this;
+    }
+    Object.defineProperty(PhysicalParticle.prototype, "bodyParameters", {
+        get: function () {
+            return {
+                mass: 1,
+                type: Body.DYNAMIC
+            };
+        },
+        enumerable: true,
+        configurable: true
+    });
+    PhysicalParticle.prototype.freeze = function () {
+        var velocity = this.body.velocity;
+        if (velocity.almostZero(this.freezeThreshold)) {
+            this.frozen = true;
+            this.freezing = false;
+            this.body.type = Body.STATIC;
+            return;
+        }
+        var freezeFactor = this.freezeFactor;
+        velocity.x *= freezeFactor.x;
+        velocity.y *= freezeFactor.y;
+        velocity.z *= freezeFactor.z;
+    };
+    PhysicalParticle.prototype.requestFreeze = function () {
+        var _this = this;
+        if (this.freezeDelay === Infinity)
+            return;
+        this.cancelFreeze();
+        this.freezeTimeout = window.setTimeout(function () {
+            _this.freezing = true;
+        }, this.freezeDelay);
+    };
+    PhysicalParticle.prototype.cancelFreeze = function () {
+        if (this.freezeTimeout === undefined)
+            return;
+        clearTimeout(this.freezeTimeout);
+        this.freezeTimeout = undefined;
+    };
+    PhysicalParticle.prototype.append = function (transition, complete) {
+        var _this = this;
+        this.freezing = this.frozen = false;
+        this.body.type = Body.DYNAMIC;
+        _super.prototype.append.call(this, transition, function (particle) {
+            _this.requestFreeze();
+            complete && complete(particle);
+        });
+    };
+    PhysicalParticle.prototype.remove = function (transition, complete) {
+        this.cancelFreeze();
+        _super.prototype.remove.call(this, transition, complete);
+    };
+    PhysicalParticle.prototype.update = function () {
+        if (!this.appended)
+            return false;
+        this.freezing && this.freeze();
+        this.frozen || this.synchronizeBody();
+        return _super.prototype.update.call(this);
+    };
+    PhysicalParticle.prototype.clearBodyShape = function () {
+        this.body.clearShapes();
+    };
+    PhysicalParticle.prototype.setBodyShape = function (shape) {
+        this.body.clearShapes(false);
+        this.body.addShape(shape);
+    };
+    PhysicalParticle.prototype.synchronizeBody = function () {
+        this.position.copy(this.body.position);
+        this.quaternion.copy(this.body.quaternion);
+    };
+    PhysicalParticle.prototype.resetBodyPosition = function () {
+        var _a = this.position, x = _a.x, y = _a.y, z = _a.z;
+        this.body.position.set(x, y, z);
+    };
+    PhysicalParticle.prototype.resetBodyQuaternion = function () {
+        var _a = this.quaternion, x = _a.x, y = _a.y, z = _a.z, w = _a.w;
+        this.body.quaternion.set(x, y, z, w);
+    };
+    PhysicalParticle.prototype.resetBodyVelocity = function () {
+        this.body.velocity.set(0, 0, 0);
+    };
+    PhysicalParticle.prototype.resetBodyAngularVelocity = function () {
+        this.body.angularVelocity.set(0, 0, 0);
+    };
+    return PhysicalParticle;
+}(Particle));
+
+var PhysicalParticleSource = /** @class */ (function (_super) {
+    __extends(PhysicalParticleSource, _super);
+    function PhysicalParticleSource(_a) {
+        var world = _a.world, parameters = __rest(_a, ["world"]);
+        var _this = _super.call(this, parameters) || this;
+        _this.world = world;
+        return _this;
+    }
+    PhysicalParticleSource.prototype.updateGeometry = function () {
+        if (this.geometry) {
+            var shape_1 = this.shape = this.createShape();
+            this.particles.forEach(function (particle) { return particle.setBodyShape(shape_1); });
+        }
+        else {
+            this.particles.forEach(function (particle) { return particle.clearBodyShape(); });
+        }
+    };
+    PhysicalParticleSource.prototype.createShape = function () {
+        this.geometry.boundingBox || this.geometry.computeBoundingBox();
+        var box = this.geometry.boundingBox;
+        return new cannon.Box(new cannon.Vec3((box.max.x - box.min.x) / 2, (box.max.y - box.min.y) / 2, (box.max.z - box.min.z) / 2));
+    };
+    PhysicalParticleSource.prototype.createParticle = function () {
+        var particle = new PhysicalParticle();
+        this.shape && particle.setBodyShape(this.shape);
+        return particle;
+    };
+    PhysicalParticleSource.prototype.appendParticle = function (_a) {
+        var _this = this;
+        var _b = _a === void 0 ? {} : _a, _c = _b.prepare, prepare = _c === void 0 ? undefined : _c, _d = _b.complete, complete = _d === void 0 ? undefined : _d, _e = _b.transition, transition = _e === void 0 ? this.transition.append : _e;
+        _super.prototype.appendParticle.call(this, {
+            complete: complete,
+            transition: transition,
+            prepare: function (particle) {
+                particle.resetBodyVelocity();
+                particle.resetBodyAngularVelocity();
+                prepare && prepare(particle);
+                particle.resetBodyPosition();
+                particle.resetBodyQuaternion();
+                _this.world.addBody(particle.body);
+            }
+        });
+    };
+    PhysicalParticleSource.prototype.removeParticle = function (_a) {
+        var _this = this;
+        var _b = _a === void 0 ? {} : _a, _c = _b.prepare, prepare = _c === void 0 ? undefined : _c, _d = _b.complete, complete = _d === void 0 ? undefined : _d, _e = _b.transition, transition = _e === void 0 ? this.transition.append : _e;
+        _super.prototype.removeParticle.call(this, {
+            prepare: prepare,
+            transition: transition,
+            complete: function (particle) {
+                _this.world.remove(particle.body);
+                complete && complete(particle);
+            }
+        });
+    };
+    return PhysicalParticleSource;
+}(ParticleSource));
+
 exports.Particle = Particle;
 exports.ParticleSource = ParticleSource;
+exports.PhysicalParticle = PhysicalParticle;
+exports.PhysicalParticleSource = PhysicalParticleSource;
 exports.Transition = Transition;
 //# sourceMappingURL=index.cjs.js.map

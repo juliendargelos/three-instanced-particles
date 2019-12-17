@@ -14,18 +14,25 @@ export class Particle implements ParticleState {
   public readonly matrix: Matrix4 = new Matrix4()
   public readonly transition: Transition = new Transition()
   public appended: boolean = false
+  public removed: boolean = false
 
-  public append(transition?: TransitionExecutor, complete?: () => void): void {
+  public append(
+    transition?: TransitionExecutor,
+    complete?: (particle: this) => void
+  ): void {
     this.appended = true
     this.transition.start(transition || Transition.show, () => {
-      complete && complete()
+      complete && complete(this)
     })
   }
 
-  public remove(transition?: TransitionExecutor, complete?: () => void): void {
+  public remove(
+    transition?: TransitionExecutor,
+    complete?: (particle: this) => void
+  ): void {
     this.transition.start(transition || Transition.hide, () => {
-      this.appended = false
-      complete && complete()
+      this.removed = true
+      complete && complete(this)
     })
   }
 
@@ -37,6 +44,11 @@ export class Particle implements ParticleState {
       this.quaternion.clone().multiply(this.transition.quaternion),
       this.scale.clone().multiply(this.transition.scale)
     )
+
+    if (this.removed) {
+      this.appended = false
+      this.removed = false
+    }
 
     return true
   }

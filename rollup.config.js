@@ -48,9 +48,10 @@ export default [
       ...config.output,
       file: pkg.browser,
       format: 'umd',
-      name: 'ThreeInstancedParticles',
+      name: 'THREEInstancedParticles',
       globals: {
         three: 'THREE',
+        cannon: 'CANNON',
         'three/examples/jsm/loaders/GLTFLoader': 'THREE.GLTFLoader',
         'three/examples/jsm/utils/BufferGeometryUtils': 'THREE.BufferGeometryUtils'
       }
