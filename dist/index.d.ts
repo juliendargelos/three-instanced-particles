@@ -180,8 +180,8 @@ declare module "physical-particle-source" {
         protected updateGeometry(): void;
         protected createShape(): Shape;
         protected createParticle(): PhysicalParticle;
-        appendParticle({ prepare, complete, transition }?: ParticleSourceMutationExecutors<PhysicalParticle>): void;
-        removeParticle({ prepare, complete, transition }?: ParticleSourceMutationExecutors<PhysicalParticle>): void;
+        appendParticle({ prepare, ...executors }?: ParticleSourceMutationExecutors<PhysicalParticle>): void;
+        removeParticle({ complete, ...executors }?: ParticleSourceMutationExecutors<PhysicalParticle>): void;
     }
 }
 declare module "index" {

@@ -53,12 +53,10 @@ export class PhysicalParticleSource extends ParticleSource<PhysicalParticle> {
 
   public appendParticle({
     prepare = undefined,
-    complete = undefined,
-    transition = this.transition.append
+    ...executors
   }: ParticleSourceMutationExecutors<PhysicalParticle> = {}): void {
     super.appendParticle({
-      complete,
-      transition,
+      ...executors,
       prepare: (particle) => {
         particle.resetBodyVelocity()
         particle.resetBodyAngularVelocity()
@@ -74,13 +72,11 @@ export class PhysicalParticleSource extends ParticleSource<PhysicalParticle> {
   }
 
   public removeParticle({
-    prepare = undefined,
     complete = undefined,
-    transition = this.transition.append
+    ...executors
   }: ParticleSourceMutationExecutors<PhysicalParticle> = {}): void {
     super.removeParticle({
-      prepare,
-      transition,
+      ...executors,
       complete: (particle) => {
         this.world.remove(particle.body)
         complete && complete(particle)

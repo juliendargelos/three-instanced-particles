@@ -127,6 +127,17 @@ function __extends(d, b) {
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 }
 
+var __assign = function() {
+    __assign = Object.assign || function __assign(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p)) t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
+
 function __rest(s, e) {
     var t = {};
     for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
@@ -563,31 +574,25 @@ var PhysicalParticleSource = /** @class */ (function (_super) {
     };
     PhysicalParticleSource.prototype.appendParticle = function (_a) {
         var _this = this;
-        var _b = _a === void 0 ? {} : _a, _c = _b.prepare, prepare = _c === void 0 ? undefined : _c, _d = _b.complete, complete = _d === void 0 ? undefined : _d, _e = _b.transition, transition = _e === void 0 ? this.transition.append : _e;
-        _super.prototype.appendParticle.call(this, {
-            complete: complete,
-            transition: transition,
-            prepare: function (particle) {
+        if (_a === void 0) { _a = {}; }
+        var _b = _a.prepare, prepare = _b === void 0 ? undefined : _b, executors = __rest(_a, ["prepare"]);
+        _super.prototype.appendParticle.call(this, __assign({}, executors, { prepare: function (particle) {
                 particle.resetBodyVelocity();
                 particle.resetBodyAngularVelocity();
                 prepare && prepare(particle);
                 particle.resetBodyPosition();
                 particle.resetBodyQuaternion();
                 _this.world.addBody(particle.body);
-            }
-        });
+            } }));
     };
     PhysicalParticleSource.prototype.removeParticle = function (_a) {
         var _this = this;
-        var _b = _a === void 0 ? {} : _a, _c = _b.prepare, prepare = _c === void 0 ? undefined : _c, _d = _b.complete, complete = _d === void 0 ? undefined : _d, _e = _b.transition, transition = _e === void 0 ? this.transition.append : _e;
-        _super.prototype.removeParticle.call(this, {
-            prepare: prepare,
-            transition: transition,
-            complete: function (particle) {
+        if (_a === void 0) { _a = {}; }
+        var _b = _a.complete, complete = _b === void 0 ? undefined : _b, executors = __rest(_a, ["complete"]);
+        _super.prototype.removeParticle.call(this, __assign({}, executors, { complete: function (particle) {
                 _this.world.remove(particle.body);
                 complete && complete(particle);
-            }
-        });
+            } }));
     };
     return PhysicalParticleSource;
 }(ParticleSource));
