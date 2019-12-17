@@ -4,6 +4,13 @@ This library provides a wrapper for managing particle instances.
 
 ## Usage
 
+- [Initializing a particle source](#initializing-a-particle-source)
+- [Appending and removing particles](#initializing-a-particle-source)
+- [Updating the instanced mesh](#updating-the-instanced-mesh)
+- [Implementing custom behaviours](#implementing-custom-behaviours)
+- [Physical particles](#physical-particles)
+- [Specific features](#specific-features)
+
 #### Initializing a particle source
 
 Start by creating a `ParticleSource`:
@@ -102,6 +109,39 @@ class SpinningParticle extends Particle {
 class SpinningParticleSource extends ParticleSource {
   protected createParticle(): Particle {
     return new SpinningParticle() // Here you could also give custom parameters to the particle constructor
+  }
+}
+```
+
+#### Physical particles
+
+This library is shipped with physical versions of `Particle` (`PhysicalParticle`) and `ParticleSource` (`PhysicalParticleSource`), they use [cannon.js](https://github.com/schteppe/cannon.js). They extend the base classes as described above. The particles body shape is automatically computed from the geometry using its bounding box. The `PhysicalParticleSource` requires an additional `world` parameter, each particle's body will be automatically added to the world when `appendParticle()` is called, and removed when `removeParticle()` is called. The particle position and quaternion is automatically updated from its body at update:
+
+```typescript
+import { World } from 'cannon'
+import { PhysicalParticleSource } from 'three-instanced-particles'
+
+const world = new World()
+const physicalParticleSource = new PhysicalParticleSource({ world })
+```
+
+As showed previously, this class can be extended, for example, to customize the particle's body shape:
+
+```typescript
+import { Cylinder } from 'cannon'
+import { CylinderBufferGeometry } from 'three'
+import { PhysicalParticleSource } from 'three-instanced-particles'
+
+export CylinderPhysicalParticleSource extends PhysicalParticleSource {
+  protected createShape(): Cylinder {
+    const {
+      radiusTop = 1,
+      radiusBottom = 1,
+      height = 1,
+      radialSegments = 8
+    } = (this.geometry! as CylinderBufferGeometry).parameters
+
+    return new Cylinder(radiusTop, radiusBottom, height, radialSegments)
   }
 }
 ```

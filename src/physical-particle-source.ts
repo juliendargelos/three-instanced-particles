@@ -7,6 +7,11 @@ import {
   ParticleSourceMutationExecutors
 } from '~/particle-source'
 
+export interface PhysicalParticleSourceParameters
+  extends ParticleSourceParameters {
+  world: World
+}
+
 export class PhysicalParticleSource extends ParticleSource<PhysicalParticle> {
   public readonly world: World
   protected shape?: Shape
@@ -14,7 +19,7 @@ export class PhysicalParticleSource extends ParticleSource<PhysicalParticle> {
   public constructor({
     world,
     ...parameters
-  }: ParticleSourceParameters & { world: World }) {
+  }: PhysicalParticleSourceParameters) {
     super(parameters)
     this.world = world
   }

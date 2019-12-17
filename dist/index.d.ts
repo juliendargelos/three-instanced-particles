@@ -170,12 +170,13 @@ declare module "physical-particle-source" {
     import { World, Shape } from 'cannon';
     import { PhysicalParticle } from "physical-particle";
     import { ParticleSource, ParticleSourceParameters, ParticleSourceMutationExecutors } from "particle-source";
+    export interface PhysicalParticleSourceParameters extends ParticleSourceParameters {
+        world: World;
+    }
     export class PhysicalParticleSource extends ParticleSource<PhysicalParticle> {
         readonly world: World;
         protected shape?: Shape;
-        constructor({ world, ...parameters }: ParticleSourceParameters & {
-            world: World;
-        });
+        constructor({ world, ...parameters }: PhysicalParticleSourceParameters);
         protected updateGeometry(): void;
         protected createShape(): Shape;
         protected createParticle(): PhysicalParticle;
