@@ -281,17 +281,45 @@ export class ParticleSource<P extends Particle = Particle> extends Object3D {
 
   public appendParticles({
     amount = Infinity,
+    complete = undefined,
+    completeAll = undefined,
     ...executors
-  }: ParticleSourceMutationExecutors<P> & { amount?: number } = {}): void {
+  }: ParticleSourceMutationExecutors<P> & {
+    amount?: number
+    completeAll?: (particles: P[]) => void
+  } = {}): void {
+    const particles: P[] = []
     amount = Math.min(amount, this.count - this.appendedParticles)
-    for (var i = 0; i < amount; i++) this.appendParticle(executors)
+
+    for (var i = 0; i < amount; i++) this.appendParticle({
+      ...executors,
+      complete: (particle) => {
+        particles.push(particle)
+        complete && complete(particle)
+        particles.length === amount && completeAll && completeAll(particles)
+      }
+    })
   }
 
   public removeParticles({
     amount = Infinity,
+    complete = undefined,
+    completeAll = undefined,
     ...executors
-  }: ParticleSourceMutationExecutors<P> & { amount?: number } = {}): void {
+  }: ParticleSourceMutationExecutors<P> & {
+    amount?: number
+    completeAll?: (particles: P[]) => void
+  } = {}): void {
+    const particles: P[] = []
     amount = Math.min(amount, this.appendedParticles)
-    for (var i = 0; i < amount; i++) this.removeParticle(executors)
+
+    for (var i = 0; i < amount; i++) this.removeParticle({
+      ...executors,
+      complete: (particle) => {
+        particles.push(particle)
+        complete && complete(particle)
+        particles.length === amount && completeAll && completeAll(particles)
+      }
+    })
   }
 }

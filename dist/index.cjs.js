@@ -395,17 +395,27 @@ var ParticleSource = /** @class */ (function (_super) {
     };
     ParticleSource.prototype.appendParticles = function (_a) {
         if (_a === void 0) { _a = {}; }
-        var _b = _a.amount, amount = _b === void 0 ? Infinity : _b, executors = __rest(_a, ["amount"]);
+        var _b = _a.amount, amount = _b === void 0 ? Infinity : _b, _c = _a.complete, complete = _c === void 0 ? undefined : _c, _d = _a.completeAll, completeAll = _d === void 0 ? undefined : _d, executors = __rest(_a, ["amount", "complete", "completeAll"]);
+        var particles = [];
         amount = Math.min(amount, this.count - this.appendedParticles);
         for (var i = 0; i < amount; i++)
-            this.appendParticle(executors);
+            this.appendParticle(__assign({}, executors, { complete: function (particle) {
+                    particles.push(particle);
+                    complete && complete(particle);
+                    particles.length === amount && completeAll && completeAll(particles);
+                } }));
     };
     ParticleSource.prototype.removeParticles = function (_a) {
         if (_a === void 0) { _a = {}; }
-        var _b = _a.amount, amount = _b === void 0 ? Infinity : _b, executors = __rest(_a, ["amount"]);
+        var _b = _a.amount, amount = _b === void 0 ? Infinity : _b, _c = _a.complete, complete = _c === void 0 ? undefined : _c, _d = _a.completeAll, completeAll = _d === void 0 ? undefined : _d, executors = __rest(_a, ["amount", "complete", "completeAll"]);
+        var particles = [];
         amount = Math.min(amount, this.appendedParticles);
         for (var i = 0; i < amount; i++)
-            this.removeParticle(executors);
+            this.removeParticle(__assign({}, executors, { complete: function (particle) {
+                    particles.push(particle);
+                    complete && complete(particle);
+                    particles.length === amount && completeAll && completeAll(particles);
+                } }));
     };
     __decorate([
         lazy

@@ -126,11 +126,13 @@ declare module "particle-source" {
         update(): void;
         appendParticle({ prepare, complete, transition }?: ParticleSourceMutationExecutors<P>): void;
         removeParticle({ prepare, complete, transition }?: ParticleSourceMutationExecutors<P>): void;
-        appendParticles({ amount, ...executors }?: ParticleSourceMutationExecutors<P> & {
+        appendParticles({ amount, complete, completeAll, ...executors }?: ParticleSourceMutationExecutors<P> & {
             amount?: number;
+            completeAll?: (particles: P[]) => void;
         }): void;
-        removeParticles({ amount, ...executors }?: ParticleSourceMutationExecutors<P> & {
+        removeParticles({ amount, complete, completeAll, ...executors }?: ParticleSourceMutationExecutors<P> & {
             amount?: number;
+            completeAll?: (particles: P[]) => void;
         }): void;
     }
 }
