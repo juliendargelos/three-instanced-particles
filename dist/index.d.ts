@@ -145,7 +145,8 @@ declare module "physical-particle" {
     import { TransitionExecutor } from "transition";
     export class PhysicalParticle extends Particle {
         protected readonly freezeDelay: number;
-        protected readonly freezeFactor: Vec3;
+        protected readonly freezeVelocityFactor: Vec3;
+        protected readonly freezeAngularVelocityFactor: Vec3;
         protected readonly freezeThreshold: number;
         protected freezeTimeout?: number;
         protected freezing: boolean;

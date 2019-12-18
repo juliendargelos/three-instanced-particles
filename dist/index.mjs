@@ -479,7 +479,8 @@ var PhysicalParticle = /** @class */ (function (_super) {
     function PhysicalParticle() {
         var _this = _super.call(this) || this;
         _this.freezeDelay = Infinity;
-        _this.freezeFactor = new Vec3(0.9, 1, 0.9);
+        _this.freezeVelocityFactor = new Vec3(0.9, 1, 0.9);
+        _this.freezeAngularVelocityFactor = new Vec3(1, 1, 1);
         _this.freezeThreshold = 0.001;
         _this.freezing = false;
         _this.frozen = false;
@@ -497,17 +498,20 @@ var PhysicalParticle = /** @class */ (function (_super) {
         configurable: true
     });
     PhysicalParticle.prototype.freeze = function () {
-        var velocity = this.body.velocity;
+        var _a = this.body, velocity = _a.velocity, angularVelocity = _a.angularVelocity;
         if (velocity.almostZero(this.freezeThreshold)) {
             this.frozen = true;
             this.freezing = false;
             this.body.type = Body.STATIC;
             return;
         }
-        var freezeFactor = this.freezeFactor;
-        velocity.x *= freezeFactor.x;
-        velocity.y *= freezeFactor.y;
-        velocity.z *= freezeFactor.z;
+        var _b = this, freezeVelocityFactor = _b.freezeVelocityFactor, freezeAngularVelocityFactor = _b.freezeAngularVelocityFactor;
+        velocity.x *= freezeVelocityFactor.x;
+        velocity.y *= freezeVelocityFactor.y;
+        velocity.z *= freezeVelocityFactor.z;
+        angularVelocity.x *= freezeAngularVelocityFactor.x;
+        angularVelocity.y *= freezeAngularVelocityFactor.y;
+        angularVelocity.z *= freezeAngularVelocityFactor.z;
     };
     PhysicalParticle.prototype.requestFreeze = function () {
         var _this = this;

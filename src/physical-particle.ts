@@ -6,7 +6,8 @@ import { TransitionExecutor } from '~/transition'
 
 export class PhysicalParticle extends Particle {
   protected readonly freezeDelay: number = Infinity
-  protected readonly freezeFactor: Vec3 = new Vec3(0.9, 1, 0.9)
+  protected readonly freezeVelocityFactor: Vec3 = new Vec3(0.9, 1, 0.9)
+  protected readonly freezeAngularVelocityFactor: Vec3 = new Vec3(1, 1, 1)
   protected readonly freezeThreshold: number = 0.001
   protected freezeTimeout?: number
   protected freezing: boolean = false
@@ -27,7 +28,7 @@ export class PhysicalParticle extends Particle {
   }
 
   protected freeze(): void {
-    const velocity = this.body.velocity
+    const { velocity,  angularVelocity } = this.body
 
     if (velocity.almostZero(this.freezeThreshold)) {
       this.frozen = true
@@ -38,11 +39,15 @@ export class PhysicalParticle extends Particle {
       return
     }
 
-    const freezeFactor = this.freezeFactor
+    const { freezeVelocityFactor, freezeAngularVelocityFactor } = this
 
-    velocity.x *= freezeFactor.x
-    velocity.y *= freezeFactor.y
-    velocity.z *= freezeFactor.z
+    velocity.x *= freezeVelocityFactor.x
+    velocity.y *= freezeVelocityFactor.y
+    velocity.z *= freezeVelocityFactor.z
+
+    angularVelocity.x *= freezeAngularVelocityFactor.x
+    angularVelocity.y *= freezeAngularVelocityFactor.y
+    angularVelocity.z *= freezeAngularVelocityFactor.z
   }
 
   protected requestFreeze(): void {
