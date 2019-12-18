@@ -135,23 +135,7 @@ export class ParticleSource<P extends Particle = Particle> extends Object3D {
       this.geometry.boundingBox || this.geometry.computeBoundingBox()
 
       const size = this.geometry.boundingBox.getSize(new Vector3())
-      let scale
-
-      if (
-        size.x > size.y && size.x < size.z ||
-        size.x < size.y && size.x > size.z
-      ) {
-        scale = size.x
-      } else if (
-        size.y > size.x && size.y < size.z ||
-        size.y < size.x && size.y > size.z
-      ) {
-        scale = size.y
-      } else {
-        scale = size.z
-      }
-
-      scale = this.autoScale / scale
+      const scale = this.autoScale / (size.x + size.y + size.z) * 3
 
       this.geometry.scale(scale, scale, scale)
     }

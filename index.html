@@ -68,6 +68,7 @@
       const particleSource = new THREEInstancedParticles.PhysicalParticleSource({
         world,
         count: 500,
+        autoScale: 1,
         geometry: new THREE.TorusBufferGeometry(),
         material: new THREE.MeshStandardMaterial()
       })
@@ -155,6 +156,21 @@
         renderer.render(scene, camera)
         requestAnimationFrame(loop)
       }
+
+      const geometries = [
+        new THREE.TorusBufferGeometry(),
+        new THREE.BoxBufferGeometry(5),
+        new THREE.SphereBufferGeometry(10),
+        new THREE.DodecahedronBufferGeometry(100)
+      ]
+
+      let geometryIndex = 0
+
+      setInterval(() =>  (
+        particleSource.geometry = geometries[
+          geometryIndex = (geometryIndex + 1) % geometries.length
+        ]
+      ), 1000)
 
       /* DOM */
 

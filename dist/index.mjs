@@ -287,19 +287,7 @@ var ParticleSource = /** @class */ (function (_super) {
         if (this.autoScale !== undefined) {
             this.geometry.boundingBox || this.geometry.computeBoundingBox();
             var size = this.geometry.boundingBox.getSize(new Vector3());
-            var scale = void 0;
-            if (size.x > size.y && size.x < size.z ||
-                size.x < size.y && size.x > size.z) {
-                scale = size.x;
-            }
-            else if (size.y > size.x && size.y < size.z ||
-                size.y < size.x && size.y > size.z) {
-                scale = size.y;
-            }
-            else {
-                scale = size.z;
-            }
-            scale = this.autoScale / scale;
+            var scale = this.autoScale / (size.x + size.y + size.z) * 3;
             this.geometry.scale(scale, scale, scale);
         }
         if (this.mesh) {
