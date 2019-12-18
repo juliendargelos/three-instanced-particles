@@ -289,16 +289,13 @@ var ParticleSource = /** @class */ (function (_super) {
             if (size.x > size.y && size.x < size.z ||
                 size.x < size.y && size.x > size.z) {
                 scale = size.x;
-                console.log('x');
             }
             else if (size.y > size.x && size.y < size.z ||
                 size.y < size.x && size.y > size.z) {
                 scale = size.y;
-                console.log('y');
             }
             else {
                 scale = size.z;
-                console.log('z');
             }
             scale = this.autoScale / scale;
             this.geometry.scale(scale, scale, scale);
