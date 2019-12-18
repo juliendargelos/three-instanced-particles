@@ -1,6 +1,7 @@
 import {
   Color,
   Object3D,
+  Vector3,
   Geometry,
   BufferGeometry,
   InstancedMesh,
@@ -35,6 +36,7 @@ export interface ParticleSourceParameters {
   material?: ColoredMaterial | ColoredMaterial[]
   count?: number
   color?: Color | number
+  autoScale?: number
   transition?: ParticleSourceTransitionExecutors
 }
 
@@ -47,6 +49,7 @@ export class ParticleSource<P extends Particle = Particle> extends Object3D {
   private _usesNormalMaterial: boolean = false
 
   protected particles: P[] = []
+  protected autoScale?: number
 
   public appendedParticles: number = 0
   public transition: ParticleSourceTransitionExecutors
@@ -57,11 +60,13 @@ export class ParticleSource<P extends Particle = Particle> extends Object3D {
     material = undefined,
     count = 0,
     color = 0xffffff,
+    autoScale = undefined,
     transition = {}
   }: ParticleSourceParameters = {}) {
     super()
 
     this.transition = transition
+    this.autoScale = autoScale
     this.geometry = geometry
     this.material = material
     this.color = color
@@ -124,9 +129,39 @@ export class ParticleSource<P extends Particle = Particle> extends Object3D {
   }
 
   protected updateGeometry(): void {
-    if (!this.mesh || !this.geometry) return
+    if (!this.geometry) return
 
-    this.mesh.geometry = this.geometry
+    if (this.autoScale !== undefined) {
+      this.geometry.boundingBox || this.geometry.computeBoundingBox()
+
+      const size = this.geometry.boundingBox.getSize(new Vector3())
+      let scale
+
+      if (
+        size.x > size.y && size.x < size.z ||
+        size.x < size.y && size.x > size.z
+      ) {
+        scale = size.x
+        console.log('x')
+      } else if (
+        size.y > size.x && size.y < size.z ||
+        size.y < size.x && size.y > size.z
+      ) {
+        scale = size.y
+        console.log('y')
+      } else {
+        scale = size.z
+        console.log('z')
+      }
+
+      scale = this.autoScale / scale
+
+      this.geometry.scale(scale, scale, scale)
+    }
+
+    if (this.mesh) {
+      this.mesh.geometry = this.geometry
+    }
   }
 
   protected updateMaterial(): void {

@@ -25,6 +25,8 @@ export class PhysicalParticleSource extends ParticleSource<PhysicalParticle> {
   }
 
   protected updateGeometry(): void {
+    super.updateGeometry()
+
     if (this.geometry) {
       const shape = this.shape = this.createShape()
       this.particles.forEach(particle => particle.setBodyShape(shape))

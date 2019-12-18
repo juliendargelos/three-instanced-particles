@@ -192,12 +192,13 @@ var ParticleSourceMutation;
 var ParticleSource = /** @class */ (function (_super) {
     __extends(ParticleSource, _super);
     function ParticleSource(_a) {
-        var _b = _a === void 0 ? {} : _a, _c = _b.geometry, geometry = _c === void 0 ? undefined : _c, _d = _b.material, material = _d === void 0 ? undefined : _d, _e = _b.count, count = _e === void 0 ? 0 : _e, _f = _b.color, color = _f === void 0 ? 0xffffff : _f, _g = _b.transition, transition = _g === void 0 ? {} : _g;
+        var _b = _a === void 0 ? {} : _a, _c = _b.geometry, geometry = _c === void 0 ? undefined : _c, _d = _b.material, material = _d === void 0 ? undefined : _d, _e = _b.count, count = _e === void 0 ? 0 : _e, _f = _b.color, color = _f === void 0 ? 0xffffff : _f, _g = _b.autoScale, autoScale = _g === void 0 ? undefined : _g, _h = _b.transition, transition = _h === void 0 ? {} : _h;
         var _this = _super.call(this) || this;
         _this._usesNormalMaterial = false;
         _this.particles = [];
         _this.appendedParticles = 0;
         _this.transition = transition;
+        _this.autoScale = autoScale;
         _this.geometry = geometry;
         _this.material = material;
         _this.color = color;
@@ -275,9 +276,32 @@ var ParticleSource = /** @class */ (function (_super) {
         configurable: true
     });
     ParticleSource.prototype.updateGeometry = function () {
-        if (!this.mesh || !this.geometry)
+        if (!this.geometry)
             return;
-        this.mesh.geometry = this.geometry;
+        if (this.autoScale !== undefined) {
+            this.geometry.boundingBox || this.geometry.computeBoundingBox();
+            var size = this.geometry.boundingBox.getSize(new Vector3());
+            var scale = void 0;
+            if (size.x > size.y && size.x < size.z ||
+                size.x < size.y && size.x > size.z) {
+                scale = size.x;
+                console.log('x');
+            }
+            else if (size.y > size.x && size.y < size.z ||
+                size.y < size.x && size.y > size.z) {
+                scale = size.y;
+                console.log('y');
+            }
+            else {
+                scale = size.z;
+                console.log('z');
+            }
+            scale = this.autoScale / scale;
+            this.geometry.scale(scale, scale, scale);
+        }
+        if (this.mesh) {
+            this.mesh.geometry = this.geometry;
+        }
     };
     ParticleSource.prototype.updateMaterial = function () {
         var _this = this;
@@ -560,6 +584,7 @@ var PhysicalParticleSource = /** @class */ (function (_super) {
         return _this;
     }
     PhysicalParticleSource.prototype.updateGeometry = function () {
+        _super.prototype.updateGeometry.call(this);
         if (this.geometry) {
             var shape_1 = this.shape = this.createShape();
             this.particles.forEach(function (particle) { return particle.setBodyShape(shape_1); });
