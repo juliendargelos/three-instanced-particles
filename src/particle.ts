@@ -16,6 +16,10 @@ export class Particle implements ParticleState {
   public appended: boolean = false
   public removed: boolean = false
 
+  public get needsUpdate(): boolean {
+    return this.appended || this.removed
+  }
+
   public append(
     transition?: TransitionExecutor,
     complete?: (particle: this) => void
@@ -32,12 +36,13 @@ export class Particle implements ParticleState {
   ): void {
     this.transition.start(transition || Transition.hide, () => {
       this.removed = true
+      this.appended = false
       complete && complete(this)
     })
   }
 
   public update(): boolean {
-    if (!this.appended) return false
+    if (!this.needsUpdate) return false
 
     this.matrix.compose(
       this.position.clone().add(this.transition.position),
@@ -45,10 +50,7 @@ export class Particle implements ParticleState {
       this.scale.clone().multiply(this.transition.scale)
     )
 
-    if (this.removed) {
-      this.appended = false
-      this.removed = false
-    }
+    if (this.removed) this.removed = false
 
     return true
   }

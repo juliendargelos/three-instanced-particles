@@ -85,7 +85,7 @@ export class PhysicalParticle extends Particle {
   }
 
   public update(): boolean {
-    if (!this.appended) return false
+    if (!this.needsUpdate) return false
     this.freezing && this.freeze()
     this.frozen || this.synchronizeBody()
     return super.update()

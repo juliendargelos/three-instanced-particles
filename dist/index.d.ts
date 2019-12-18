@@ -42,6 +42,7 @@ declare module "particle" {
         readonly transition: Transition;
         appended: boolean;
         removed: boolean;
+        readonly needsUpdate: boolean;
         append(transition?: TransitionExecutor, complete?: (particle: this) => void): void;
         remove(transition?: TransitionExecutor, complete?: (particle: this) => void): void;
         update(): boolean;

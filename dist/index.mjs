@@ -64,6 +64,13 @@ var Particle = /** @class */ (function () {
         this.appended = false;
         this.removed = false;
     }
+    Object.defineProperty(Particle.prototype, "needsUpdate", {
+        get: function () {
+            return this.appended || this.removed;
+        },
+        enumerable: true,
+        configurable: true
+    });
     Particle.prototype.append = function (transition, complete) {
         var _this = this;
         this.appended = true;
@@ -75,17 +82,16 @@ var Particle = /** @class */ (function () {
         var _this = this;
         this.transition.start(transition || Transition.hide, function () {
             _this.removed = true;
+            _this.appended = false;
             complete && complete(_this);
         });
     };
     Particle.prototype.update = function () {
-        if (!this.appended)
+        if (!this.needsUpdate)
             return false;
         this.matrix.compose(this.position.clone().add(this.transition.position), this.quaternion.clone().multiply(this.transition.quaternion), this.scale.clone().multiply(this.transition.scale));
-        if (this.removed) {
-            this.appended = false;
+        if (this.removed)
             this.removed = false;
-        }
         return true;
     };
     Particle.prototype.dispose = function () {
@@ -542,7 +548,7 @@ var PhysicalParticle = /** @class */ (function (_super) {
         _super.prototype.remove.call(this, transition, complete);
     };
     PhysicalParticle.prototype.update = function () {
-        if (!this.appended)
+        if (!this.needsUpdate)
             return false;
         this.freezing && this.freeze();
         this.frozen || this.synchronizeBody();
