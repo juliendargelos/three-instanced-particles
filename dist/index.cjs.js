@@ -202,13 +202,14 @@ var ParticleSourceMutation;
 var ParticleSource = /** @class */ (function (_super) {
     __extends(ParticleSource, _super);
     function ParticleSource(_a) {
-        var _b = _a === void 0 ? {} : _a, _c = _b.geometry, geometry = _c === void 0 ? undefined : _c, _d = _b.material, material = _d === void 0 ? undefined : _d, _e = _b.count, count = _e === void 0 ? 0 : _e, _f = _b.color, color = _f === void 0 ? 0xffffff : _f, _g = _b.autoScale, autoScale = _g === void 0 ? undefined : _g, _h = _b.transition, transition = _h === void 0 ? {} : _h;
+        var _b = _a === void 0 ? {} : _a, _c = _b.geometry, geometry = _c === void 0 ? undefined : _c, _d = _b.material, material = _d === void 0 ? undefined : _d, _e = _b.count, count = _e === void 0 ? 0 : _e, _f = _b.color, color = _f === void 0 ? 0xffffff : _f, _g = _b.autoScale, autoScale = _g === void 0 ? undefined : _g, _h = _b.autoScaleAxis, autoScaleAxis = _h === void 0 ? 'average' : _h, _j = _b.transition, transition = _j === void 0 ? {} : _j;
         var _this = _super.call(this) || this;
         _this._usesNormalMaterial = false;
         _this.particles = [];
         _this.appendedParticles = 0;
         _this.transition = transition;
         _this.autoScale = autoScale;
+        _this.autoScaleAxis = autoScaleAxis;
         _this.geometry = geometry;
         _this.material = material;
         _this.color = color;
@@ -291,7 +292,9 @@ var ParticleSource = /** @class */ (function (_super) {
         if (this.autoScale !== undefined) {
             this.geometry.boundingBox || this.geometry.computeBoundingBox();
             var size = this.geometry.boundingBox.getSize(new three.Vector3());
-            var scale = this.autoScale / (size.x + size.y + size.z) * 3;
+            var scale = this.autoScaleAxis === 'average'
+                ? this.autoScale / (size.x + size.y + size.z) * 3
+                : this.autoScale / size[this.autoScaleAxis];
             this.geometry.scale(scale, scale, scale);
         }
         if (this.mesh) {

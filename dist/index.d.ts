@@ -94,6 +94,7 @@ declare module "particle-source" {
         count?: number;
         color?: Color | number;
         autoScale?: number;
+        autoScaleAxis?: 'x' | 'y' | 'z' | 'average';
         transition?: ParticleSourceTransitionExecutors;
     }
     export class ParticleSource<P extends Particle = Particle> extends Object3D {
@@ -105,10 +106,11 @@ declare module "particle-source" {
         private _usesNormalMaterial;
         protected particles: P[];
         protected autoScale?: number;
+        protected autoScaleAxis: 'x' | 'y' | 'z' | 'average';
         appendedParticles: number;
         transition: ParticleSourceTransitionExecutors;
         count: number;
-        constructor({ geometry, material, count, color, autoScale, transition }?: ParticleSourceParameters);
+        constructor({ geometry, material, count, color, autoScale, autoScaleAxis, transition }?: ParticleSourceParameters);
         private readonly normalMaterial;
         readonly generated: boolean;
         geometry: Geometry | BufferGeometry | undefined;

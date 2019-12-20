@@ -37,6 +37,7 @@ export interface ParticleSourceParameters {
   count?: number
   color?: Color | number
   autoScale?: number
+  autoScaleAxis?: 'x' | 'y' | 'z' | 'average'
   transition?: ParticleSourceTransitionExecutors
 }
 
@@ -50,6 +51,7 @@ export class ParticleSource<P extends Particle = Particle> extends Object3D {
 
   protected particles: P[] = []
   protected autoScale?: number
+  protected autoScaleAxis: 'x' | 'y' | 'z' | 'average'
 
   public appendedParticles: number = 0
   public transition: ParticleSourceTransitionExecutors
@@ -61,12 +63,14 @@ export class ParticleSource<P extends Particle = Particle> extends Object3D {
     count = 0,
     color = 0xffffff,
     autoScale = undefined,
+    autoScaleAxis = 'average',
     transition = {}
   }: ParticleSourceParameters = {}) {
     super()
 
     this.transition = transition
     this.autoScale = autoScale
+    this.autoScaleAxis = autoScaleAxis
     this.geometry = geometry
     this.material = material
     this.color = color
@@ -135,7 +139,9 @@ export class ParticleSource<P extends Particle = Particle> extends Object3D {
       this.geometry.boundingBox || this.geometry.computeBoundingBox()
 
       const size = this.geometry.boundingBox.getSize(new Vector3())
-      const scale = this.autoScale / (size.x + size.y + size.z) * 3
+      const scale = this.autoScaleAxis === 'average'
+        ? this.autoScale / (size.x + size.y + size.z) * 3
+        : this.autoScale / size[this.autoScaleAxis]
 
       this.geometry.scale(scale, scale, scale)
     }
