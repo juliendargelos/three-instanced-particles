@@ -1,9 +1,13 @@
 import {
   Object3D,
   Mesh,
+  Line,
+  Points,
+  InstancedMesh,
   Material,
   Geometry,
   BufferGeometry,
+  InstancedBufferGeometry,
   Color
 } from 'three'
 
@@ -16,13 +20,33 @@ import {
 export type ColoredMaterial = Material & { color: Color }
 
 export function isMesh(object: Object3D): object is Mesh {
-  return (object as unknown as Mesh).isMesh
+  return (object as Mesh).isMesh
+}
+
+export function isLine(object: Object3D): object is Line {
+  return (object as Line).isLine
+}
+
+export function isPoints(object: Object3D): object is Points {
+  return (object as Points).isPoints
+}
+
+export function isInstancedMesh(object: Object3D): object is InstancedMesh {
+  return (object as InstancedMesh).isInstancedMesh
 }
 
 export function isBufferGeometry(
   geometry: Geometry | BufferGeometry
 ): geometry is BufferGeometry {
   return (geometry as BufferGeometry).isBufferGeometry
+}
+
+export function isInstancedBufferGeometry(
+  geometry: Geometry | BufferGeometry | InstancedBufferGeometry
+): geometry is InstancedBufferGeometry {
+  return (geometry as unknown as {
+    isInstancedBufferGeometry: boolean
+  }).isInstancedBufferGeometry
 }
 
 export function mergeGLTF(gltf: GLTF): {

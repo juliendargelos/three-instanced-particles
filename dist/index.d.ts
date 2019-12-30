@@ -49,32 +49,29 @@ declare module "particle" {
         dispose(): void;
     }
 }
-declare module "utils/decorators" {
-    export function lazy(target: object, property: string, descriptor: PropertyDescriptor): void;
-}
-declare module "utils/three" {
-    import { Object3D, Mesh, Material, Geometry, BufferGeometry, Color } from 'three';
+declare module "utils" {
+    import { Object3D, Mesh, Line, Points, InstancedMesh, Material, Geometry, BufferGeometry, InstancedBufferGeometry, Color } from 'three';
     import { GLTF } from 'three/examples/jsm/loaders/GLTFLoader';
     export type ColoredMaterial = Material & {
         color: Color;
     };
     export function isMesh(object: Object3D): object is Mesh;
+    export function isLine(object: Object3D): object is Line;
+    export function isPoints(object: Object3D): object is Points;
+    export function isInstancedMesh(object: Object3D): object is InstancedMesh;
     export function isBufferGeometry(geometry: Geometry | BufferGeometry): geometry is BufferGeometry;
+    export function isInstancedBufferGeometry(geometry: Geometry | BufferGeometry | InstancedBufferGeometry): geometry is InstancedBufferGeometry;
     export function mergeGLTF(gltf: GLTF): {
         geometry: BufferGeometry;
         material: ColoredMaterial | ColoredMaterial[];
     };
-}
-declare module "utils/index" {
-    export * from "utils/decorators";
-    export * from "utils/three";
 }
 declare module "particle-source" {
     import { Color, Object3D, Geometry, BufferGeometry } from 'three';
     import { GLTF } from 'three/examples/jsm/loaders/GLTFLoader';
     import { Particle } from "particle";
     import { TransitionExecutor } from "transition";
-    import { ColoredMaterial } from "utils/index";
+    import { ColoredMaterial } from "utils";
     enum ParticleSourceMutation {
         Append = 1,
         Remove = -1
@@ -99,24 +96,20 @@ declare module "particle-source" {
     }
     export class ParticleSource<P extends Particle = Particle> extends Object3D {
         private mesh?;
-        private normalMesh?;
         private _geometry?;
         private _material?;
         private _color;
-        private _usesNormalMaterial;
-        protected particles: P[];
         protected autoScale?: number;
         protected autoScaleAxis: 'x' | 'y' | 'z' | 'average';
+        particles: P[];
         appendedParticles: number;
         transition: ParticleSourceTransitionExecutors;
         count: number;
         constructor({ geometry, material, count, color, autoScale, autoScaleAxis, transition }?: ParticleSourceParameters);
-        private readonly normalMaterial;
         readonly generated: boolean;
         geometry: Geometry | BufferGeometry | undefined;
         material: ColoredMaterial | ColoredMaterial[] | undefined;
         color: Color | number;
-        usesNormalMaterial: boolean;
         protected updateGeometry(): void;
         protected updateMaterial(): void;
         protected createParticle(): P;
@@ -192,11 +185,32 @@ declare module "physical-particle-source" {
         removeParticle({ complete, ...executors }?: ParticleSourceMutationExecutors<PhysicalParticle>): void;
     }
 }
+declare module "scene" {
+    import { Scene as BaseScene, Material, Mesh, WebGLRenderer, Camera, Geometry, BufferGeometry, Group, Line, Points, InstancedMesh } from 'three';
+    type RenderCallback = (renderer: WebGLRenderer, scene: BaseScene, camera: Camera, geometry: Geometry | BufferGeometry, material: Material, group: Group) => void;
+    export class Scene extends BaseScene {
+        private _onBeforeRender;
+        private _onAfterRender;
+        private _overrideMaterial?;
+        private objectMaterials?;
+        private drawableObjects?;
+        private instancedOverrideMaterials;
+        drawableObjectsNeedUpdate: boolean;
+        handleInstancedOverrideMaterials: boolean;
+        onBeforeRender: RenderCallback;
+        onAfterRender: RenderCallback;
+        private setOverrideMaterial;
+        private unsetOverrideMaterial;
+        traverseDrawableObjects(callback: (object: Mesh | Line | Points | InstancedMesh) => void): void;
+        dispose(): void;
+    }
+}
 declare module "index" {
     export { Particle } from "particle";
     export { ParticleSource } from "particle-source";
     export { PhysicalParticle } from "physical-particle";
     export { PhysicalParticleSource } from "physical-particle-source";
     export { Transition } from "transition";
+    export { Scene } from "scene";
 }
 //# sourceMappingURL=index.d.ts.map

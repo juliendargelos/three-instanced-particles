@@ -1,4 +1,4 @@
-import { Vector3, Quaternion, Matrix4, MeshNormalMaterial, InstancedMesh, Object3D } from 'three';
+import { Vector3, Quaternion, Matrix4, InstancedMesh, Object3D, Scene as Scene$1 } from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { BufferGeometryUtils } from 'three/examples/jsm/utils/BufferGeometryUtils';
 import { Body as Body$1, Vec3, Box } from 'cannon';
@@ -150,22 +150,20 @@ function __rest(s, e) {
     return t;
 }
 
-function __decorate(decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-}
-
-function lazy(target, property, descriptor) {
-    var get = descriptor.get;
-    descriptor.get = function () { return Object.defineProperty(target, property, {
-        value: get.call(target)
-    })[property]; };
-}
-
 function isMesh(object) {
     return object.isMesh;
+}
+function isLine(object) {
+    return object.isLine;
+}
+function isPoints(object) {
+    return object.isPoints;
+}
+function isInstancedMesh(object) {
+    return object.isInstancedMesh;
+}
+function isInstancedBufferGeometry(geometry) {
+    return geometry.isInstancedBufferGeometry;
 }
 function mergeGLTF(gltf) {
     var geometries = [];
@@ -200,7 +198,6 @@ var ParticleSource = /** @class */ (function (_super) {
     function ParticleSource(_a) {
         var _b = _a === void 0 ? {} : _a, _c = _b.geometry, geometry = _c === void 0 ? undefined : _c, _d = _b.material, material = _d === void 0 ? undefined : _d, _e = _b.count, count = _e === void 0 ? 0 : _e, _f = _b.color, color = _f === void 0 ? 0xffffff : _f, _g = _b.autoScale, autoScale = _g === void 0 ? undefined : _g, _h = _b.autoScaleAxis, autoScaleAxis = _h === void 0 ? 'average' : _h, _j = _b.transition, transition = _j === void 0 ? {} : _j;
         var _this = _super.call(this) || this;
-        _this._usesNormalMaterial = false;
         _this.particles = [];
         _this.appendedParticles = 0;
         _this.transition = transition;
@@ -212,16 +209,6 @@ var ParticleSource = /** @class */ (function (_super) {
         _this.count = count;
         return _this;
     }
-    Object.defineProperty(ParticleSource.prototype, "normalMaterial", {
-        get: function () {
-            return new MeshNormalMaterial({
-                morphTargets: true,
-                skinning: true
-            });
-        },
-        enumerable: true,
-        configurable: true
-    });
     Object.defineProperty(ParticleSource.prototype, "generated", {
         get: function () {
             return !!this.mesh;
@@ -269,19 +256,6 @@ var ParticleSource = /** @class */ (function (_super) {
         enumerable: true,
         configurable: true
     });
-    Object.defineProperty(ParticleSource.prototype, "usesNormalMaterial", {
-        get: function () {
-            return this._usesNormalMaterial;
-        },
-        set: function (v) {
-            this._usesNormalMaterial = v;
-            if (!this.mesh || (!v && !this.material))
-                return;
-            this.mesh.material = v ? this.normalMaterial : this.material;
-        },
-        enumerable: true,
-        configurable: true
-    });
     ParticleSource.prototype.updateGeometry = function () {
         if (!this.geometry)
             return;
@@ -307,8 +281,7 @@ var ParticleSource = /** @class */ (function (_super) {
         else {
             this.material.color.set(this.color);
         }
-        if (!this.usesNormalMaterial)
-            this.mesh.material = this.material;
+        this.mesh.material = this.material;
     };
     ParticleSource.prototype.createParticle = function () {
         return new Particle();
@@ -431,9 +404,6 @@ var ParticleSource = /** @class */ (function (_super) {
                     particles.length === amount && completeAll && completeAll(particles);
                 } }));
     };
-    __decorate([
-        lazy
-    ], ParticleSource.prototype, "normalMaterial", null);
     return ParticleSource;
 }(Object3D));
 
@@ -626,5 +596,142 @@ var PhysicalParticleSource = /** @class */ (function (_super) {
     return PhysicalParticleSource;
 }(ParticleSource));
 
-export { Particle, ParticleSource, PhysicalParticle, PhysicalParticleSource, Transition };
+var Scene = /** @class */ (function (_super) {
+    __extends(Scene, _super);
+    function Scene() {
+        var _this = _super !== null && _super.apply(this, arguments) || this;
+        _this._onBeforeRender = _this.setOverrideMaterial;
+        _this._onAfterRender = _this.unsetOverrideMaterial;
+        _this.instancedOverrideMaterials = {};
+        _this.drawableObjectsNeedUpdate = false;
+        _this.handleInstancedOverrideMaterials = true;
+        return _this;
+    }
+    Object.defineProperty(Scene.prototype, "onBeforeRender", {
+        get: function () {
+            return this._onBeforeRender;
+        },
+        set: function (v) {
+            var _this = this;
+            if (v) {
+                this._onBeforeRender = function () {
+                    var parameters = [];
+                    for (var _i = 0; _i < arguments.length; _i++) {
+                        parameters[_i] = arguments[_i];
+                    }
+                    _this.setOverrideMaterial();
+                    v.apply(void 0, parameters);
+                };
+            }
+            else {
+                this._onBeforeRender = this.setOverrideMaterial;
+            }
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Scene.prototype, "onAfterRender", {
+        get: function () {
+            return this._onAfterRender;
+        },
+        set: function (v) {
+            var _this = this;
+            if (v) {
+                this._onAfterRender = function () {
+                    var parameters = [];
+                    for (var _i = 0; _i < arguments.length; _i++) {
+                        parameters[_i] = arguments[_i];
+                    }
+                    _this.unsetOverrideMaterial();
+                    v.apply(void 0, parameters);
+                };
+            }
+            else {
+                this._onAfterRender = this.unsetOverrideMaterial;
+            }
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Scene.prototype.setOverrideMaterial = function () {
+        var _this = this;
+        if (!this.handleInstancedOverrideMaterials)
+            return;
+        var overrideMaterial = this.overrideMaterial;
+        if (!overrideMaterial)
+            return;
+        this._overrideMaterial = overrideMaterial;
+        this.overrideMaterial = null;
+        var id = overrideMaterial.id;
+        var version = overrideMaterial.version;
+        this.objectMaterials = {};
+        this.traverseDrawableObjects(function (object) {
+            var material = overrideMaterial;
+            if (isInstancedMesh(object) ||
+                isInstancedBufferGeometry(object.geometry)) {
+                var instancedMaterial = _this.instancedOverrideMaterials[id];
+                if (instancedMaterial && instancedMaterial.version === version) {
+                    material = instancedMaterial.material;
+                }
+                else {
+                    material = overrideMaterial.clone();
+                    if (instancedMaterial) {
+                        instancedMaterial.material.dispose();
+                        instancedMaterial.material = material;
+                        instancedMaterial.version = version;
+                    }
+                    else {
+                        instancedMaterial = { version: version, material: material };
+                    }
+                    _this.instancedOverrideMaterials[id] = instancedMaterial;
+                }
+            }
+            _this.objectMaterials[object.id] = object.material;
+            object.material = material;
+        });
+    };
+    Scene.prototype.unsetOverrideMaterial = function () {
+        var _this = this;
+        if (!this.handleInstancedOverrideMaterials ||
+            !this._overrideMaterial)
+            return;
+        this.traverseDrawableObjects(function (object) {
+            object.material = _this.objectMaterials[object.id];
+        });
+        this.overrideMaterial = this._overrideMaterial;
+        this._overrideMaterial = undefined;
+        this.objectMaterials = undefined;
+    };
+    Scene.prototype.traverseDrawableObjects = function (callback) {
+        var _this = this;
+        if (!this.drawableObjects || this.drawableObjectsNeedUpdate) {
+            this.drawableObjectsNeedUpdate = false;
+            this.drawableObjects = [];
+            this.traverse(function (object) {
+                if (!isMesh(object) &&
+                    !isLine(object) &&
+                    !isPoints(object) &&
+                    !isInstancedMesh(object))
+                    return;
+                object.visible && callback(object);
+                _this.drawableObjects.push(object);
+            });
+        }
+        else {
+            this.drawableObjects.forEach(function (object) { return object.visible && callback(object); });
+        }
+    };
+    Scene.prototype.dispose = function () {
+        _super.prototype.dispose.call(this);
+        this.drawableObjects = undefined;
+        for (var id in this.instancedOverrideMaterials) {
+            var material = this.instancedOverrideMaterials[id].material;
+            material.dispose();
+            delete this.instancedOverrideMaterials[id];
+        }
+    };
+    return Scene;
+}(Scene$1));
+
+export { Particle, ParticleSource, PhysicalParticle, PhysicalParticleSource, Scene, Transition };
 //# sourceMappingURL=index.mjs.map

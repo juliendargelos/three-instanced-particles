@@ -4,14 +4,13 @@ import {
   Vector3,
   Geometry,
   BufferGeometry,
-  InstancedMesh,
-  MeshNormalMaterial
+  InstancedMesh
 } from 'three'
 
 import { GLTF, GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
 import { Particle } from '~/particle'
 import { TransitionExecutor } from '~/transition'
-import { lazy, mergeGLTF, ColoredMaterial } from '~/utils'
+import { mergeGLTF, ColoredMaterial } from '~/utils'
 
 enum ParticleSourceMutation {
   Append = 1,
@@ -43,16 +42,14 @@ export interface ParticleSourceParameters {
 
 export class ParticleSource<P extends Particle = Particle> extends Object3D {
   private mesh?: InstancedMesh
-  private normalMesh?: InstancedMesh
   private _geometry?: Geometry | BufferGeometry
   private _material?: ColoredMaterial | ColoredMaterial[]
   private _color!: Color | number
-  private _usesNormalMaterial: boolean = false
 
-  protected particles: P[] = []
   protected autoScale?: number
   protected autoScaleAxis: 'x' | 'y' | 'z' | 'average'
 
+  public particles: P[] = []
   public appendedParticles: number = 0
   public transition: ParticleSourceTransitionExecutors
   public count: number
@@ -75,13 +72,6 @@ export class ParticleSource<P extends Particle = Particle> extends Object3D {
     this.material = material
     this.color = color
     this.count = count
-  }
-
-  @lazy private get normalMaterial(): MeshNormalMaterial {
-    return new MeshNormalMaterial({
-      morphTargets: true,
-      skinning: true
-    })
   }
 
   public get generated(): boolean {
@@ -122,16 +112,6 @@ export class ParticleSource<P extends Particle = Particle> extends Object3D {
     }
   }
 
-  public get usesNormalMaterial(): boolean {
-    return this._usesNormalMaterial
-  }
-
-  public set usesNormalMaterial(v: boolean) {
-    this._usesNormalMaterial = v
-    if (!this.mesh || (!v && !this.material)) return
-    this.mesh.material = v ? this.normalMaterial : this.material!
-  }
-
   protected updateGeometry(): void {
     if (!this.geometry) return
 
@@ -160,7 +140,7 @@ export class ParticleSource<P extends Particle = Particle> extends Object3D {
       this.material.color.set(this.color as Color)
     }
 
-    if (!this.usesNormalMaterial) this.mesh.material = this.material
+    this.mesh.material = this.material
   }
 
   protected createParticle(): P {
