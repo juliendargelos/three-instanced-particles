@@ -98,7 +98,7 @@ const yAxis = new Vector3(0, 1, 0)
 
 class SpinningParticle extends Particle {
   public update(): boolean {
-    if (!this.appended) return false // Only update when the particle is visible
+    if (!this.needsUpdate) return false // Only update when needed
 
     this.quaternion.setFromAxisAngle(yAxis, performance.now() / 5000)
 
