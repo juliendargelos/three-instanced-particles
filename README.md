@@ -125,7 +125,7 @@ const world = new World()
 const physicalParticleSource = new PhysicalParticleSource({ world })
 ```
 
-As showed previously, this class can be extended, for example, to customize the particle's body shape:
+As shown previously, this class can be extended, for example, to customize the particle's body shape:
 
 ```typescript
 import { Cylinder } from 'cannon'
