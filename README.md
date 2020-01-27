@@ -154,4 +154,4 @@ If you want to use `ParticleSource` with GLTF, you can use `particleSource.useGL
 
 If your `particleSource` is meant to use various geometries along time, and you want them to have nearly the same size, you can set an `autoScale` parameter (number) at instanciation which will automatically scale the geometry **in place** (clone the geometry before giving it to the `particleSource` if you want to keep the original version). The scale provided will be applied to the axis given by the `autoScaleAxis` parameter which can be either `'x'`, `'y'`, `'z'` or `'average'` (default), and all other axes will be resized proportionally.
 
-Some features aren't mentionned here (like disposing or coloring things), but the [source code](src) is quite obvious, even more if you are using TypeScript.
+Some features aren't mentionned here (like disposing or coloring things), but you can explore the [source code](src).
