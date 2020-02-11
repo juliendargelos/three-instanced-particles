@@ -1,6 +1,6 @@
 {
   "name": "three-instanced-particles",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Instanced mesh wrapper for managing particles.",
   "author": "Julien Dargelos <contact@juliendargelos.com>",
   "license": "MIT",
