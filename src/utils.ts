@@ -59,7 +59,7 @@ export function mergeGLTF(gltf: GLTF): {
   gltf.scene.traverse((mesh) => {
     if (!isMesh(mesh)) return
 
-    mesh.updateMatrixWorld(true)
+    mesh.updateWorldMatrix(true, false)
     mesh.geometry.applyMatrix(mesh.matrixWorld)
 
     geometries.push(mesh.geometry as BufferGeometry)

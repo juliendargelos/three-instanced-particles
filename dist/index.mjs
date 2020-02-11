@@ -171,7 +171,7 @@ function mergeGLTF(gltf) {
     gltf.scene.traverse(function (mesh) {
         if (!isMesh(mesh))
             return;
-        mesh.updateMatrixWorld(true);
+        mesh.updateWorldMatrix(true, false);
         mesh.geometry.applyMatrix(mesh.matrixWorld);
         geometries.push(mesh.geometry);
         materials.push(mesh.material);
