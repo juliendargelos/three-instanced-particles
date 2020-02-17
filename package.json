@@ -32,7 +32,7 @@
     "animejs": "^3.1.0",
     "cannon": "^0.6.2",
     "eslint": "^5.12.1",
-    "rollup": "^1.1.2",
+    "rollup": "^1.31.1",
     "rollup-plugin-alias": "^2.2.0",
     "rollup-plugin-auto-external": "^2.0.0",
     "rollup-plugin-cleaner": "^1.0.0",
