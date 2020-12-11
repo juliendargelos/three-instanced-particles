@@ -26,7 +26,7 @@
   },
   "devDependencies": {
     "@types/cannon": "^0.1.4",
-    "@types/jest": "^24.0.13",
+    "@types/jest": "^26.0.19",
     "@typescript-eslint/eslint-plugin": "^1.8.0",
     "@typescript-eslint/parser": "^1.8.0",
     "animejs": "^3.1.0",
