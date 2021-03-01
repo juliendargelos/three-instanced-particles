@@ -22,7 +22,7 @@
     "cannon": "^0.6.2"
   },
   "peerDependencies": {
-    "three": "^0.110.0"
+    "three": "^0.125.0"
   },
   "devDependencies": {
     "@types/cannon": "^0.1.4",
@@ -42,7 +42,7 @@
     "rollup-plugin-terser": "^4.0.4",
     "rollup-plugin-typescript2": "^0.21.0",
     "serve": "^11.2.0",
-    "three": "^0.110.0",
+    "three": "^0.125.0",
     "typescript": "3.5.1"
   }
 }
